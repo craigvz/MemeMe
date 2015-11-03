@@ -8,18 +8,196 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate {
 
+    @IBOutlet weak var imagePickerView: UIImageView!
+    @IBOutlet weak var cameraButton: UIBarButtonItem!
+    
+    @IBOutlet weak var topTextInput: UITextField!
+    @IBOutlet weak var bottomTextInput: UITextField!
+    @IBOutlet weak var shareButton: UIBarButtonItem!
+    
+    @IBOutlet weak var navBar: UINavigationBar!
+    @IBOutlet weak var toolBar: UIToolbar!
+    
+    var memedImage: UIImage!
+    
+    //MARK: View Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        //Establish TextField Text Attributes
+        let memeTextAttributes = [
+            NSStrokeColorAttributeName : UIColor.blackColor(),
+            NSForegroundColorAttributeName : UIColor.whiteColor(),
+            NSFontAttributeName : UIFont(name: "HelveticaNeue-CondensedBlack", size: 32)!,
+            NSStrokeWidthAttributeName : -5.0]
+        
+        //Configure TextFields
+        topTextInput.defaultTextAttributes = memeTextAttributes
+        topTextInput.backgroundColor = UIColor.clearColor()
+        topTextInput.textAlignment = .Center
+        
+        bottomTextInput.defaultTextAttributes = memeTextAttributes
+        bottomTextInput.backgroundColor = UIColor.clearColor()
+        bottomTextInput.textAlignment = .Center
+    
         // Do any additional setup after loading the view, typically from a nib.
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        
+        //Listen for keyboard presentation notifications
+        self.subscribeToKeyboardNotifications()
+        
+        //Check if the device camera is available, if so enable camera button
+        cameraButton.enabled = UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera)
+    }
+    
+    override func viewWillDisappear(animated: Bool) {
+        //Stop listening for keyboard presentation notifications
+        self.unsubscribeToKeyboardNotifications()
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
+    override func preferredStatusBarStyle() -> UIStatusBarStyle {
+        return .LightContent
+    }
+    
+    
+    //MARK: Keyboard Handling Methods
+    
+    func keyboardWillShow(notification: NSNotification) {
+        
+        //Get keyboard heigth and set view origin y value
+        if bottomTextInput.isFirstResponder() {
+            self.view.frame.origin.y =  getKeyboardHeight(notification) * -1
+        }
+    }
+    
+    func keyboardWillHide(notification: NSNotification) {
+        
+        //Move view back to bottom when keyboard is dismissed
+        if bottomTextInput.isFirstResponder() {
+            self.view.frame.origin.y = 0
+        }
+    }
+    
+    func getKeyboardHeight (notification: NSNotification) -> CGFloat {
+        
+        let userInfo = notification.userInfo
+        let keyboardSize = userInfo![UIKeyboardFrameEndUserInfoKey] as! NSValue //of CGRect
+        return keyboardSize.CGRectValue().height
+        
+    }
 
+    func subscribeToKeyboardNotifications () {
+        
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillShow:", name: UIKeyboardWillShowNotification, object: nil)
+        
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillHide:", name: UIKeyboardWillHideNotification, object: nil)
+    }
+    
+    func unsubscribeToKeyboardNotifications () {
+        
+        NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardWillShowNotification, object: nil)
+    //    NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardWillHideNotification, object: nil)
+    }
+    
+    
+    //MARK: Media Selection Methods
+    
+    @IBAction func selectImageFromCameraRoll(sender: UIBarButtonItem) {
+        
+        let pickerController = UIImagePickerController ()
+        pickerController.delegate = self
+        pickerController.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
+        self.presentViewController(pickerController, animated: true, completion: nil)
+    }
+    
+    @IBAction func pickAnImageFromCamera (sender: UIBarButtonItem) {
+        let imagePicker = UIImagePickerController()
+        imagePicker.delegate = self
+        imagePicker.sourceType = UIImagePickerControllerSourceType.Camera
+        self.presentViewController(imagePicker, animated: true, completion: nil)
+    }
+    
+    func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
+        
+        if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
+            self.imagePickerView.image = image
+            self.shareButton.enabled = true
+            self.dismissViewControllerAnimated(true, completion: nil)
+            
+        }
+    }
+    
+    //MARK:  Create/Share/Save MEME Methods
+    
+    func generateMemedImage() -> UIImage {
+        
+        navBar.hidden = true
+        toolBar.hidden = true
+        
+        // Render view to an image
+        UIGraphicsBeginImageContext(self.view.frame.size)
+        self.view.drawViewHierarchyInRect(self.view.frame,afterScreenUpdates: true)
+        memedImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        navBar.hidden = false
+        toolBar.hidden = false
+
+        return memedImage
+        
+    }
+    
+    func saveMeme() {
+        
+       let meme = Meme (topString: topTextInput.text, bottomString: bottomTextInput.text, originalImage: imagePickerView.image, memeImage:memedImage)
+        
+    }
+
+  
+    
+    @IBAction func didTouchShareButton(sender: UIBarButtonItem) {
+        print("Did Touch Share Button")
+        self.memedImage = generateMemedImage()
+        let vc = UIActivityViewController(activityItems: [memedImage], applicationActivities: [])
+            presentViewController(vc, animated: true, completion: nil)
+      
+            vc.completionWithItemsHandler = { activity, completed, items, error in
+            if completed {
+                self.saveMeme()
+                self.dismissViewControllerAnimated(true, completion: nil)
+                print("Completed!")
+            }
+        }
+    }
+    
+    @IBAction func didTouchCancelButton(sender: UIBarButtonItem) {
+        
+        print("Did Touch Cancel Button")
+    }
+ 
+    
+    //MARK: TextField Delegate Methods
+    
+    func textFieldDidBeginEditing(textField: UITextField) {
+        textField.text = nil
+        
+        
+    }
+    
+    func textFieldShouldReturn(textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
 
 }
 
