@@ -22,6 +22,11 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     
     var memedImage: UIImage!
     
+    var topText: String!
+    var bottomText: String!
+    var image: UIImage!
+    
+    
     //MARK: View Lifecycle
     
     override func viewDidLoad() {
@@ -35,9 +40,11 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
             NSStrokeWidthAttributeName : -5.0]
         
         //Configure TextFields
+     
         topTextInput.defaultTextAttributes = memeTextAttributes
         topTextInput.backgroundColor = UIColor.clearColor()
         topTextInput.textAlignment = .Center
+        
         
         bottomTextInput.defaultTextAttributes = memeTextAttributes
         bottomTextInput.backgroundColor = UIColor.clearColor()
@@ -53,7 +60,14 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         
         //Check if the device camera is available, if so enable camera button
         cameraButton.enabled = UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera)
-    }
+        //If editing selected meme instead of creating a new meme, load exisiting content
+        if((topText) != nil){
+            topTextInput.text = topText
+            bottomTextInput.text = bottomText
+            imagePickerView.image = image
+            shareButton.enabled = true
+            }
+        }
     
     override func viewWillDisappear(animated: Bool) {
         //Stop listening for keyboard presentation notifications
@@ -158,8 +172,14 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     }
     
     func saveMeme() {
-   // For use in v2.0
-   //    let meme = Meme (topString: topTextInput.text, bottomString: bottomTextInput.text, originalImage: imagePickerView.image, memeImage:memedImage)
+        
+        // Create the meme
+        let meme = Meme (topString: topTextInput.text, bottomString: bottomTextInput.text, originalImage: imagePickerView.image, memeImage:memedImage)
+        
+        // Add it to the memes array in the Application Delegate
+        let object = UIApplication.sharedApplication().delegate
+        let appDelegate = object as! AppDelegate
+        appDelegate.memes.append(meme)
         
     }
     
@@ -178,6 +198,8 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     }
     
     @IBAction func didTouchCancelButton(sender: UIBarButtonItem) {
+        
+        dismissViewControllerAnimated(true, completion: nil)
         
     }
  
