@@ -1,3 +1,3 @@
 # MemeMe
 
-Udacity project 2a MemeMe v1.0
+Udacity project 2b MemeMe v2.0
