@@ -20,7 +20,7 @@ class MemeDetailViewController: UIViewController {
         super.viewDidLoad()
         
         let editButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.Edit, target: self, action: Selector("openMemeEditor"))
-        self.navigationItem.rightBarButtonItem = editButton
+        navigationItem.rightBarButtonItem = editButton
         
     }
     

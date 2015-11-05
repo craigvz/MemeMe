@@ -32,25 +32,9 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //Establish TextField Text Attributes
-        let memeTextAttributes = [
-            NSStrokeColorAttributeName : UIColor.blackColor(),
-            NSForegroundColorAttributeName : UIColor.whiteColor(),
-            NSFontAttributeName : UIFont(name: "HelveticaNeue-CondensedBlack", size: 32)!,
-            NSStrokeWidthAttributeName : -5.0]
-        
         //Configure TextFields
-     
-        topTextInput.defaultTextAttributes = memeTextAttributes
-        topTextInput.backgroundColor = UIColor.clearColor()
-        topTextInput.textAlignment = .Center
-        
-        
-        bottomTextInput.defaultTextAttributes = memeTextAttributes
-        bottomTextInput.backgroundColor = UIColor.clearColor()
-        bottomTextInput.textAlignment = .Center
-    
-        // Do any additional setup after loading the view, typically from a nib.
+        prepareTextField(topTextInput, defaultText: "TOP")
+        prepareTextField(bottomTextInput, defaultText: "BOTTOM")
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -60,6 +44,7 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         
         //Check if the device camera is available, if so enable camera button
         cameraButton.enabled = UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera)
+        
         //If editing selected meme instead of creating a new meme, load exisiting content
         if((topText) != nil){
             topTextInput.text = topText
@@ -81,6 +66,21 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     
     override func preferredStatusBarStyle() -> UIStatusBarStyle {
         return .LightContent
+    }
+    
+    func prepareTextField(textField: UITextField, defaultText: String) {
+        super.viewDidLoad()
+        let memeTextAttributes = [
+            NSStrokeColorAttributeName : UIColor.blackColor(),
+            NSForegroundColorAttributeName : UIColor.whiteColor(),
+            NSFontAttributeName : UIFont(name: "HelveticaNeue-CondensedBlack", size: 32)!,
+            NSStrokeWidthAttributeName : -5.0
+        ]
+        textField.delegate = self
+        textField.defaultTextAttributes = memeTextAttributes
+        textField.text = defaultText
+        textField.autocapitalizationType = .AllCharacters
+        textField.textAlignment = .Center
     }
     
     

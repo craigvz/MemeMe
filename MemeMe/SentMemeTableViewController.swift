@@ -17,10 +17,12 @@ class SentMemeTableViewController: UITableViewController {
     
     //MARK: View Lifecycle
     override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
         tableView.reloadData()
     }
     
     override func viewDidAppear(animated: Bool) {
+        super.viewDidAppear(animated)
         
         //Provide UI Guidance on initial open
         if(memes.count == 0){
@@ -34,7 +36,7 @@ class SentMemeTableViewController: UITableViewController {
             presentViewController(alertView, animated: true, completion: nil)
         }
         //Remove Extra TableView Rows
-        self.tableView.tableFooterView = UIView.init(frame: CGRectZero)
+        tableView.tableFooterView = UIView.init(frame: CGRectZero)
     }
     
     //MARK: TableView
@@ -90,11 +92,11 @@ class SentMemeTableViewController: UITableViewController {
 
     @IBAction func didTouchEditButton(sender: UIBarButtonItem) {
         
-        if self.tableView.editing == true {
-            self.tableView.setEditing(false, animated: true)
+        if tableView.editing == true {
+            tableView.setEditing(false, animated: true)
             sender.title = "Edit"
         } else  {
-            self.tableView.setEditing(true, animated: true)
+            tableView.setEditing(true, animated: true)
             sender.title = "Done"
         }
     }
